@@ -1,61 +1,52 @@
 
 
 import pandas as pd
-from yahoofinancials import YahooFinancials
 import requests
 import bs4 as bs
 import xlsxwriter
 from datetime import datetime
 
 
-tickers=["OMC","WPP","IPG","DNTUF","ACN","IT","HURN","BAH","FCN","PRFT","CTSH","VRTU","FLNT","MCHX","DMS","QUOT","PFSW","THRY","KBNT","MRIN","CREX","BLIN"]
-all_df_1 = pd.DataFrame()
-all_df_2 = pd.DataFrame()
-
-def get_df_1(ticker):
-    yahoo_financials = YahooFinancials(ticker)
-    stats_1=yahoo_financials.get_key_statistics_data()
-    df_1=pd.DataFrame(stats_1).loc[['enterpriseValue'],:].transpose()
-    df_1['marketCap']= [yahoo_financials.get_market_cap()]
-
-    return df_1
-
-for ticker in tickers:
-    df_1 = get_df_1(ticker)
-    if len(all_df_1) ==0:
-        all_df_1 = df_1
-    else:
-        all_df_1 = all_df_1.append(df_1)
+tickers1=["OMC","WPP","IPG","DNTUF","ACN","IT","HURN","BAH","FCN","PRFT","CTSH","VRTU"]
+tickers2=["FLNT","MCHX","DMS","QUOT","PFSW","THRY","KBNT","MRIN","CREX","BLIN"]
 
 
-###############################################################################
-########Function to scrape data from yahoo finance statistics page ############
-###############################################################################
-
-def get_df_2(ticker):
+def get_key_stats(ticker):
     url = r'https://sg.finance.yahoo.com/quote/{0}/key-statistics?p={0}'.format(ticker)
     # Fake as a browser, otherwise Yahoo will block you
     headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    stats_2 = pd.read_html(requests.get(url, headers=headers).text)
-    vMeasures = stats_2 [0]
-    for df in stats_2 [1:]:
-        vMeasures = vMeasures.append(df)
-    df_2=vMeasures[2:9].set_index(0).T
-
-    return df_2
+    df_list = pd.read_html(requests.get(url, headers=headers).text)
+    result_df = df_list[0]
+    for df in df_list[1:]:
+        result_df = result_df.append(df)
+    valuation_measures=result_df[0:9].set_index(0).T
+    return valuation_measures
 
 ###############################################################################
 ##############Create a Pandas DF for a list of tickers ########################
 ###############################################################################
+def get_all_stats(ticker)
+    all_result_df = pd.DataFrame()
 
-for ticker in tickers:
-    df_2 = get_df_2(ticker)
-    if len(all_df_2) ==0:
-        all_df_2 = df_2
-    else:
-        all_df_2 = all_df_2.append(df_2)
+    for ticker in tickers:
+
+        valuation_measures = get_key_stats(ticker)
+
+        if len(all_result_df) ==0:
+            all_result_df = valuation_measures
+        else:
+            all_result_df = all_result_df.append(valuation_measures)
+
+    return all_result_df
 
 
+print(get_all_stats(tickers1))
+print(get_all_stats(tickers2))
+
+
+
+# TO DO ##### Change data type, convert B(Billion) and M(Million) to numbers #####
+# TO DO ##### Set column names and row indexes #########
 
 
 
@@ -77,8 +68,7 @@ filename = "Yahoo Finance_" + day + ".xlsx"
 writer = pd.ExcelWriter(filename, engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object; Customize Sheet name and table location
-all_df_1.to_excel(writer, sheet_name=day,startrow=3,startcol=1,index=False,header=False)
-all_df_2.to_excel(writer, sheet_name=day,startrow=3,startcol=3,index=False,header=False)
+all_result_df.to_excel(writer, sheet_name=day,startrow=3,startcol=1,index=False,header=False)
 
 # Get the xlsxwriter workbook and worksheet objects.
 workbook  = writer.book
@@ -106,6 +96,7 @@ worksheet.write('I3', 'Enterprise Value/Revenue', bold)
 worksheet.write('J3', 'Enterprise Value/EBITDA', bold)
 
 row_number=3
+
 for ticker in tickers:
     row_number += 1
     cell='A'+str(row_number)
