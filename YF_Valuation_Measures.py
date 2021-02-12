@@ -22,12 +22,9 @@ def get_key_stats(ticker):
     for df in df_list[1:]:
         result_df = result_df.append(df)
 
-    return result_df.set_index(0).T
+    valuation_measures=result_df[0:9].set_index(0).T
 
-
-result_df = get_key_stats("T")
-
-
+    return valuation_measures
 
 ###############################################################################
 ##############Create a Pandas DF for a list of tickers ########################
@@ -38,14 +35,14 @@ all_result_df = pd.DataFrame()
 
 for ticker in tickers:
 
-    result_df = get_key_stats(ticker)
+    valuation_measures = get_key_stats(ticker)
 
     if len(all_result_df) ==0:
-        all_result_df = result_df
+        all_result_df = valuation_measures
     else:
-        all_result_df = all_result_df.append(result_df)
+        all_result_df = all_result_df.append(valuation_measures)
 
-# TO DO ##### Select specific columns (9 columns in "Valuation Measures")#########
+
 # TO DO ##### Change data type, convert B(Billion) and M(Million) to numbers #####
 # TO DO ##### Set column names and row indexes #########
 
