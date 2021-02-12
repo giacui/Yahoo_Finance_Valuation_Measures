@@ -7,8 +7,10 @@ import bs4 as bs
 import xlsxwriter
 from datetime import datetime
 
-
+consultancies=['Omnicom','WPP','Interpublic','Dentsu','Accenture','Gartner','Huron Consulting','Booz Allen Hamilton','FTI Consulting','Perficient','Cognizant','Virtusa']
+solutions=['Fluent','Marchex','Digital Media Solutions','Quotient','PFSweb','Thryv Holdings','Kubient','Marin Software','Creative Realities','Bridgeline Digital']
 tickers=["OMC","WPP","IPG","DNTUF","ACN","IT","HURN","BAH","FCN","PRFT","CTSH","VRTU","FLNT","MCHX","DMS","QUOT","PFSW","THRY","KBNT","MRIN","CREX","BLIN"]
+
 all_df_1 = pd.DataFrame()
 all_df_2 = pd.DataFrame()
 
@@ -66,6 +68,11 @@ for ticker in tickers:
 ###############################################################################
 ############## Save DF in Excel & format the table ############################
 ###############################################################################
+consultancies_df_1=all_df_1.head(12)
+consultancies_df_2=all_df_2.head(12)
+
+solutions_df_1=all_df_1.tail(10)
+solutions_df_2=all_df_2.tail(10)
 
 
 day=datetime.today().strftime('%Y-%m-%d')
@@ -77,22 +84,32 @@ filename = "Yahoo Finance_" + day + ".xlsx"
 writer = pd.ExcelWriter(filename, engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object; Customize Sheet name and table location
-all_df_1.to_excel(writer, sheet_name=day,startrow=3,startcol=1,index=False,header=False)
-all_df_2.to_excel(writer, sheet_name=day,startrow=3,startcol=3,index=False,header=False)
+consultancies_df_1.to_excel(writer, sheet_name=day,startrow=3,startcol=1,index=False,header=False)
+consultancies_df_2.to_excel(writer, sheet_name=day,startrow=3,startcol=3,index=False,header=False)
+
+solutions_df_1.to_excel(writer, sheet_name=day,startrow=24,startcol=1,index=False,header=False)
+solutions_df_2.to_excel(writer, sheet_name=day,startrow=24,startcol=3,index=False,header=False)
 
 # Get the xlsxwriter workbook and worksheet objects.
 workbook  = writer.book
+worksheet = writer.sheets[day]
 
 # Pre-define formatting
 bold = workbook.add_format({'bold': True})
 cell_format = workbook.add_format()
 cell_format.set_align('left')
-# TO DO #####  Set the column width and format. #####
+# Set the column width and format. #####
+# Set the column width and format.
+worksheet.set_column('A:E', 18, None)
+worksheet.set_column('F:J', 22, None)
 
 
 # Add date and time stamp
 worksheet = writer.sheets[day]
 worksheet.write('B1', stamp, bold)
+
+worksheet.write('A2', 'Digital Consultancies', bold)
+worksheet.write('A23', 'Digital Agency Solutions', bold)
 
 # Add column names
 worksheet.write('B3', 'Market Cap', bold)
@@ -105,11 +122,28 @@ worksheet.write('H3', 'Price/Book (mrq)', bold)
 worksheet.write('I3', 'Enterprise Value/Revenue', bold)
 worksheet.write('J3', 'Enterprise Value/EBITDA', bold)
 
+# Add column names
+worksheet.write('B24', 'Market Cap', bold)
+worksheet.write('C24', 'Enterprise Value', bold)
+worksheet.write('D24', 'Trailing P/E', bold)
+worksheet.write('E24', 'Forward P/E 1', bold)
+worksheet.write('F24', 'PEG Ratio (5 yr expected)', bold)
+worksheet.write('G24', 'Price/Sales (ttm)', bold)
+worksheet.write('H24', 'Price/Book (mrq)', bold)
+worksheet.write('I24', 'Enterprise Value/Revenue', bold)
+worksheet.write('J24', 'Enterprise Value/EBITDA', bold)
+
+
 row_number=3
-for ticker in tickers:
+for i in consultancies:
     row_number += 1
     cell='A'+str(row_number)
-    worksheet.write(cell,ticker, bold)
+    worksheet.write(cell,i, bold)
 
+row_number=24
+for i in solutions:
+    row_number += 1
+    cell='A'+str(row_number)
+    worksheet.write(cell,i, bold)
 
 writer.save()

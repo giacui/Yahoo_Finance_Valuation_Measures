@@ -28,8 +28,6 @@ for ticker in tickers:
         all_df_1 = all_df_1.append(df_1)
 
 
-
-
 def get_df_2(ticker):
     url = r'https://sg.finance.yahoo.com/quote/{0}/key-statistics?p={0}'.format(ticker)
     # Fake as a browser, otherwise Yahoo will block you
@@ -48,8 +46,3 @@ for ticker in tickers:
         all_df_2 = df_2
     else:
         all_df_2 = all_df_2.append(df_2)
-
-
-
-result = pd.concat([all_df_1, all_df_2], axis=1)
-print(result)
